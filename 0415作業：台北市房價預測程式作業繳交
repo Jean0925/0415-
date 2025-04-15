@@ -1,0 +1,43 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from xgboost import XGBRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+
+# 讀取資料
+df = pd.read_csv("Taipei_house.csv")
+
+# 顯示前幾筆資料與欄位
+print(df.head())
+print(df.columns)
+
+# 假設 "price" 是目標變數，其他是特徵
+# 清理資料：去除缺失值
+df = df.dropna()
+
+# 分離特徵與標籤
+X = df.drop("price", axis=1)
+y = df["price"]
+
+# 處理類別型變數（如果有）
+X = pd.get_dummies(X)
+
+# 特徵標準化
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 分割訓練與測試資料
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# 建立 XGBoost 模型
+model = XGBRegressor()
+model.fit(X_train, y_train)
+
+# 預測
+y_pred = model.predict(X_test)
+
+# 評估模型
+rmse = mean_squared_error(y_test, y_pred, squared=False)
+r2 = r2_score(y_test, y_pred)
+print(f"RMSE: {rmse}")
+print(f"R^2 Score: {r2}")
